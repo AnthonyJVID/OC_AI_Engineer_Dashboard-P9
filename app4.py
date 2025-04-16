@@ -2,14 +2,10 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import streamlit.components.v1 as components
-import torch
 from PIL import Image
 import numpy as np
 import cv2
-from transformers import SegformerForSemanticSegmentation, SegformerFeatureExtractor, SegformerConfig
 from fonctions import rgb_to_class, dice_score, iou_score
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Palette de couleurs pour les 8 classes (Cityscapes remappées)
 CITYSCAPES_COLORS = {
@@ -51,29 +47,6 @@ def preprocess_image(img_pil):
     if img_arr.ndim == 2:
         img_arr = np.stack([img_arr] * 3, axis=-1)
     return img_arr.astype(np.float32)
-
-# Fonction de prédiction avec SegFormer B5
-def predict_segformer(image, model, processor):
-    inputs = processor(images=image, return_tensors="pt").to(device)
-    inputs = {k: v.to(device) for k, v in inputs.items()}
-    with torch.no_grad():
-        outputs = model(**inputs)
-    logits = outputs.logits
-    seg = torch.argmax(logits, dim=1)[0].cpu().numpy()
-    seg_resized = cv2.resize(seg, (256, 256), interpolation=cv2.INTER_NEAREST)
-    return colorize_mask(seg_resized)
-
-# Chargement du modèle SegFormer
-def load_segformer_model(model_path):
-    model = SegformerForSemanticSegmentation.from_pretrained(
-        "nvidia/segformer-b5-finetuned-cityscapes-1024-1024",
-        num_labels=8,
-        ignore_mismatched_sizes=True
-    )
-    model.load_state_dict(torch.load(model_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu")))
-    model.to(device)
-    model.eval()
-    return model
 
 import requests
 from io import BytesIO
