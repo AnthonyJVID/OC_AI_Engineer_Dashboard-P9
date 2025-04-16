@@ -8,3 +8,4 @@ tensorflow
 torch
 transformers
 cityscapesscripts
+albumentations
