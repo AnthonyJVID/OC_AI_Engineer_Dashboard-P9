@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
 from pathlib import Path
-from torchvision import transforms
 from cityscapesscripts.helpers.labels import name2label, trainId2label
 from cityscapesscripts.preparation.json2labelImg import json2labelImg
 from typing import Tuple
