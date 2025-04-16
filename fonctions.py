@@ -20,8 +20,8 @@ def dice_score(y_true: np.ndarray, y_pred: np.ndarray, smooth: float = 1e-6) -> 
     return (2. * intersection) / (len(y_true_f) + len(y_pred_f) + smooth)
 
 def iou_score(y_true: np.ndarray, y_pred: np.ndarray, smooth: float = 1e-6) -> float:
-    intersection = np.logical_and(y_true == y_pred, y_true != 0).sum()
-    union = np.logical_or(y_true != 0, y_pred != 0).sum()
+    intersection = np.logical_and(y_true == y_pred, True).sum()
+    union = np.logical_or(y_true >= 0, y_pred >= 0).sum()
     return (intersection + smooth) / (union + smooth)
 
 # ------------ PALETTE + REMAPPING POUR MASQUES CITYSCAPES ----------------
