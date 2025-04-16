@@ -13,27 +13,37 @@ from typing import Tuple
 
 # ------------ MÉTRIQUES POUR ÉVALUATION DES PRÉDICTIONS ----------------
 
-def dice_coef(y_true, y_pred, smooth=1):
-    # s'assurer que ce sont bien des array 2D (masques de classes)
-    y_true_f = y_true.flatten()
-    y_pred_f = y_pred.flatten()
-    intersection = np.sum(y_true_f == y_pred_f)
-    return (2. * intersection + smooth) / (np.sum(y_true_f != -1) + np.sum(y_pred_f != -1) + smooth)
-
-def mean_iou(y_true, y_pred):
-    num_classes = 8  # ou utilise config
-    ious = []
-    for cls in range(num_classes):
-        y_true_cls = (y_true == cls)
-        y_pred_cls = (y_pred == cls)
-        intersection = np.logical_and(y_true_cls, y_pred_cls).sum()
-        union = np.logical_or(y_true_cls, y_pred_cls).sum()
+def dice_score(y_true: np.ndarray, y_pred: np.ndarray, num_classes: int = 8, smooth: float = 1e-6) -> float:
+    """
+    Calcule le Dice Coefficient moyen (macro) entre deux masques indexés (valeurs 0 à num_classes-1).
+    """
+    dice = 0.0
+    for c in range(num_classes):
+        y_true_c = (y_true == c).astype(np.uint8)
+        y_pred_c = (y_pred == c).astype(np.uint8)
+        intersection = np.sum(y_true_c * y_pred_c)
+        union = np.sum(y_true_c) + np.sum(y_pred_c)
         if union == 0:
-            iou = np.nan
+            dice += 1.0  # Si la classe est absente dans les 2, on considère Dice = 1 (par convention)
         else:
-            iou = intersection / union
-        ious.append(iou)
-    return np.nanmean(ious)
+            dice += (2.0 * intersection + smooth) / (union + smooth)
+    return dice / num_classes
+
+def iou_score(y_true: np.ndarray, y_pred: np.ndarray, num_classes: int = 8, smooth: float = 1e-6) -> float:
+    """
+    Calcule le Mean IoU (Intersection over Union) moyen (macro) entre deux masques indexés.
+    """
+    iou = 0.0
+    for c in range(num_classes):
+        y_true_c = (y_true == c).astype(np.uint8)
+        y_pred_c = (y_pred == c).astype(np.uint8)
+        intersection = np.sum(y_true_c * y_pred_c)
+        union = np.sum(np.logical_or(y_true_c, y_pred_c))
+        if union == 0:
+            iou += 1.0  # Si la classe est absente dans les deux, on considère IoU = 1
+        else:
+            iou += (intersection + smooth) / (union + smooth)
+    return iou / num_classes
 
 # ------------ PALETTE + REMAPPING POUR MASQUES CITYSCAPES ----------------
 
