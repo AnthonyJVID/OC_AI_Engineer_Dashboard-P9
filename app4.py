@@ -4,7 +4,6 @@ import plotly.express as px
 import streamlit.components.v1 as components
 import torch
 import tensorflow as tf
-import segmentation_models as sm
 from PIL import Image
 import numpy as np
 import cv2
@@ -12,10 +11,6 @@ from transformers import SegformerForSemanticSegmentation, SegformerFeatureExtra
 from fonctions import rgb_to_class, dice_score, iou_score
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# Configurer le framework de segmentation (TensorFlow/Keras)
-sm.set_framework("tf.keras")
-sm.framework()
 
 # Palette de couleurs pour les 8 classes (Cityscapes remappées)
 CITYSCAPES_COLORS = {
