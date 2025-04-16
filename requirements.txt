@@ -4,7 +4,6 @@ plotly
 opencv-python-headless
 Pillow
 numpy
-tensorflow
 torch
 transformers
 cityscapesscripts
