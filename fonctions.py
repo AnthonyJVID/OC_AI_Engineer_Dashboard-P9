@@ -1,4 +1,4 @@
-# fonctions_cleaned.py : version allégée uniquement pour le dashboard app4.py
+# fonctions : version allégée uniquement pour le dashboard app4.py
 
 import os
 import numpy as np
@@ -13,16 +13,27 @@ from typing import Tuple
 
 # ------------ MÉTRIQUES POUR ÉVALUATION DES PRÉDICTIONS ----------------
 
-def dice_score(y_true: np.ndarray, y_pred: np.ndarray, smooth: float = 1e-6) -> float:
+def dice_coef(y_true, y_pred, smooth=1):
+    # s'assurer que ce sont bien des array 2D (masques de classes)
     y_true_f = y_true.flatten()
     y_pred_f = y_pred.flatten()
     intersection = np.sum(y_true_f == y_pred_f)
-    return (2. * intersection) / (len(y_true_f) + len(y_pred_f) + smooth)
+    return (2. * intersection + smooth) / (np.sum(y_true_f != -1) + np.sum(y_pred_f != -1) + smooth)
 
-def iou_score(y_true: np.ndarray, y_pred: np.ndarray, smooth: float = 1e-6) -> float:
-    intersection = np.logical_and(y_true == y_pred, True).sum()
-    union = np.logical_or(y_true >= 0, y_pred >= 0).sum()
-    return (intersection + smooth) / (union + smooth)
+def mean_iou(y_true, y_pred):
+    num_classes = 8  # ou utilise config
+    ious = []
+    for cls in range(num_classes):
+        y_true_cls = (y_true == cls)
+        y_pred_cls = (y_pred == cls)
+        intersection = np.logical_and(y_true_cls, y_pred_cls).sum()
+        union = np.logical_or(y_true_cls, y_pred_cls).sum()
+        if union == 0:
+            iou = np.nan
+        else:
+            iou = intersection / union
+        ious.append(iou)
+    return np.nanmean(ious)
 
 # ------------ PALETTE + REMAPPING POUR MASQUES CITYSCAPES ----------------
 
